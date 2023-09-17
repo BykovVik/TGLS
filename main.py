@@ -1,9 +1,11 @@
 import telebot
 from transliterate.base import TranslitLanguagePack, registry
-from transliterate import get_available_language_codes, translit
+from transliterate import translit
 from dotenv import load_dotenv
 import os
+import enchant
 
+dictionary = enchant.Dict("en_US")
 load_dotenv()
 bot = telebot.TeleBot(os.getenv("TOKEN"))
 
@@ -20,15 +22,16 @@ registry.register(MyLanguagePack)
 
 @bot.message_handler(content_types=['text'])
 def chat_nessage_hendler(message):
-    print("ЭТООО")
     if message.chat.type == "private":
         return
-    else:
+    
+    if dictionary.check(message.text.split()[0]):
+        return
         
-        msg = translit(message.text, language_code='kbd')
-        
-        if message.text != msg:
-            bot.reply_to(message, msg)
+    msg = translit(message.text, language_code='kbd')
+
+    if message.text != msg:
+        bot.reply_to(message, msg)
     
 if __name__ == "__main__":
     try:
